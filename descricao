@@ -1,0 +1,32 @@
+Descrição: Deve ser implementado um sistema de monitoramento de mensagens de um
+chat.
+
+Tanto os usuários do chat, como as mensagens, devem ser implementados como
+tuplas em um espaço de tuplas.
+
+Deve haver uma tupla especial, denominada espião, que
+vai monitorar todas as mensagens do chat.
+
+Sempre que uma mensagem possuir um
+determinado grupo de palavras “suspeitas” o espião deve enviar uma mensagem para o
+mediador alertando esse processo.
+
+Essas mensagens devem ser depositadas em um
+tópico em um servidor de Mensagens (MOM), instalado em uma máquina remota,
+sendo que o mediador deve ser um processo que registra interesse nesse tópico e é
+avisado sempre que uma nova notificação chegar.
+
+
+Essa notificação, por sua vez, deve
+ser apresentada na tela do mediador.
+
+
+A Figura 1 apresenta a arquitetura da aplicação.
+
+
+• As mensagens do chat devem ser apresentadas na tela de cada usuário.
+
+• Deve-se garantir que as mensagens sejam extraídas pelos destinatários mas sempre
+passando antes pelo espião.
+
+• Deve ser possível indicar as palavras suspeitas na interface do espião.
