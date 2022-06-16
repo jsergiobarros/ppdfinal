@@ -7,6 +7,7 @@ from tkinter import messagebox
 from tkinter.scrolledtext import ScrolledText
 from client import Client
 from server import Server
+from spy import spy
 from functools import partial
 NOME = ""
 INDICE=0
@@ -87,6 +88,7 @@ def main_chat():
         CLIENTE2 = Client((ip_local, 5050))
         while BOOL:
             aux=CLIENTE._rd(('mensagens', 0, int))
+            print(aux)
             atualizanome()
             if(aux==id_mensagem or aux==0):
                 time.sleep(1)
@@ -129,16 +131,21 @@ def define_nome():
             MENSAGEM=CLIENTE._rd(('mensagens', 0, int))
             CLIENTE._out(('usuarios', 0, INDICE))
             CLIENTE._out(('usuarios', INDICE, NOME))
+            print(INDICE,MENSAGEM)
 
         except:
             if(messagebox.askyesno(title="Servidor não existe", message=f"Servidor não existe, deseja iniciar um no ip{ip_local}?")):
-                server = threading.Thread(target=lambda: Server.start_server(host=ip_local))
+                #server = threading.Thread(target=lambda: Server.start_server(host=ip_local))
+                server = threading.Thread(target=spy)
                 server.start()
+                #aux = spy()
                 CLIENTE = Client((endereco.get(), 5050))
                 INDICE=1
-                CLIENTE._out(('mensagens', 0, 0))
-                CLIENTE._out(('usuarios', 0, 1))
+                MENSAGEM=0
+                aux=CLIENTE._in(('usuarios', 0, int))
+                CLIENTE._out(('usuarios', 0, aux+1))
                 CLIENTE._out(('usuarios', 1, NOME))
+
 
 
             else:
