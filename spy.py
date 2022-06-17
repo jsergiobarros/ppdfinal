@@ -30,13 +30,18 @@ class spy:
         self.CLIENTE._out(('mensagens', 0, 0))
         self.CLIENTE._out(('usuarios', 0, 0))
         while True:
-            print("entrou")
+
             mensagem = self.CLIENTE._in(("spy", "mensagem publica", str))
             print(mensagem)
             indice = self.CLIENTE._in(("mensagens", 0, int))
             indice+=1
             self.CLIENTE._out(("mensagens", 0, indice ))
             self.CLIENTE._out(("mensagens", indice , mensagem))
+            for i in self.topicos:
+                if(mensagem.find(i)!=-1):
+                    self.proxy.recebe_mensagem(i,mensagem)
+
+
             ###### Implementar a interface rmi rpc
         self.CLIENTE.close()
 
@@ -77,9 +82,9 @@ class spy:
         self.proxy=0
         def enviaTopico():
             while True:
-                ":".join(self.topicos)
-                #print(":".join(self.topicos))
-                self.proxy.recebe_topico(":".join(self.topicos))
+                aux="topico:"+str(len(self.topicos))+":"+":".join(self.topicos)
+                #aux=len(self.topicos)+":"+aux
+                self.proxy.recebe_topico(aux)
                 time.sleep(3)
 
         def cria_proxy():

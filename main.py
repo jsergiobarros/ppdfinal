@@ -88,7 +88,7 @@ def main_chat():
         CLIENTE2 = Client((ip_local, 5050))
         while BOOL:
             aux=CLIENTE._rd(('mensagens', 0, int))
-            print(aux)
+            #print(aux)
             atualizanome()
             if(aux==id_mensagem or aux==0):
                 time.sleep(1)
@@ -131,7 +131,7 @@ def define_nome():
             MENSAGEM=CLIENTE._rd(('mensagens', 0, int))
             CLIENTE._out(('usuarios', 0, INDICE))
             CLIENTE._out(('usuarios', INDICE, NOME))
-            print(INDICE,MENSAGEM)
+            #print(INDICE,MENSAGEM)
 
         except:
             if(messagebox.askyesno(title="Servidor não existe", message=f"Servidor não existe, deseja iniciar um no ip{ip_local}?")):

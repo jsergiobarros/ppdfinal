@@ -1,82 +1,66 @@
 import random
+import threading
+from functools import partial
+
+from client import Client
+from server import Server
+from paho.mqtt import client as mqtt
+from tkinter import messagebox
 from tkinter.scrolledtext import ScrolledText
 from tkinter import *
-import paho.mqtt.client as paho
 
-class Cliente:
+class servidor_mensagem:
+    TOPICOS=0
+    var=[0,0]
 
-    def onMessage(self,client,userdata,message):
-        self.insertTxt(str(message.payload.decode('utf-8')))
+    def subunsub(self,topico,variavel):
+        if(variavel.get()):
+            self.client.subscribe(topico,2)
+        else:
+            self.client.unsubscribe(topico, 2)
 
     def __init__(self):
-        self.broker = 'mqtt.eclipseprojects.io'
+        def onMessage( client, userdata, message):
+            aux = message.payload.decode('utf-8').split(":")
+            print(aux)
+            if (aux[0] == "topico" and int(aux[1]) > self.TOPICOS):
+                for i in range(self.TOPICOS+2,int(aux[1])+2):
+                    self.var.append(IntVar())
+                    button = Checkbutton(self.canvas, text=aux[i],variable=self.var[i])
+                    button.grid(row=i,sticky = W)
+                    button["command"] = partial(self.subunsub, aux[i],self.var[i])
+                self.TOPICOS = int(aux[1])
+            elif(aux[0]!="topico"):
+                self.chat_public.configure(state='normal')
+                self.chat_public.insert(END, message.payload.decode('utf-8'))
+                self.chat_public.insert(END, "\n")
+                self.chat_public.see('end')
+                self.chat_public.configure(state='disabled')
+        broker = 'mqtt.eclipseprojects.io'
         aux = str(random.randint(-10000, 100000))
-        self.client = paho.Client(aux)
-        self.client.on_message = self.onMessage
-        self.client.connect(self.broker)
-        self.client.loop_start()
-        self.janela()
+        self.client = mqtt.Client(aux)
+        self.client.on_message = onMessage
+        self.client.connect(broker)
+        self.client.subscribe("topicos",2)
+        server = threading.Thread(target=self.janela)
+        server.start()
+        print("start")
+        self.client.loop_forever()
 
-    def subscribe(self,temp,umi,velo):
-        self.client.loop_stop()
-        if temp!="0":
-            print(temp)
-            self.client.subscribe("Temperatura",2)
-        else:
-            self.client.unsubscribe("Temperatura")
-        if umi!="0":
-            print(umi)
-            self.client.subscribe("Umidade",2)
-        else:
-            self.client.unsubscribe("Umidade")
-        if velo!="0":
-            print(velo)
-            self.client.subscribe("Velocidade",2)
-        else:
-            self.client.unsubscribe("Velocidade")
-        self.client.loop_start()
+        print("close")
 
-    def insertTxt(self,txt):  ###metodo de INSERIR MENSAGEM
-        self.chat.configure(state='normal')
-        self.chat.insert(END, txt)
-        self.chat.insert(END, "\n")
-        self.chat.see('end')
-        self.chat.configure(state='disabled')
-
-    def cls(self):  ###metodo de INSERIR MENSAGEM
-        self.chat.configure(state='normal')
-        self.chat.delete('1.0', END)
-        self.chat.see('end')
-        self.chat.configure(state='disabled')
 
     def janela(self):
-        janela=Tk()
-        janela.geometry("800x400")
+        janela = Tk()
+        janela.geometry("800x500")
         janela.resizable(False, False)
         janela.title("Cliente")
-        var1 = StringVar()
-        var2 = StringVar()
-        var3 = StringVar()
-        label=Label(janela,text="Canais")
-        label2 = Label(janela, text="Leituras")
-        c0 = Checkbutton(janela, text="Temperatura",onvalue="Temperatura", variable=var1,command=lambda: self.subscribe(var1.get(),var2.get(),var3.get()))
-        c1 = Checkbutton(janela, text="Umidade", variable=var2, onvalue="Umidade", command=lambda: self.subscribe(var1.get(),var2.get(),var3.get()))
-        c2 = Checkbutton(janela, text="Velocidade", onvalue="Velocidade", variable=var3, command=lambda: self.subscribe(var1.get(),var2.get(),var3.get()))
-        button = Button(text="Limpar Tela",borderwidth=2,command=self.cls)
-        self.chat = ScrolledText(janela, width=85, height=20, state='disabled')
-        self.chat.place(x=100,y=40)
-        label.place(x=35,y=10)
-        label2.place(x=400,y=10)
-        c0.place(x=5,y=40)
-        c1.place(x=5,y=70)
-        c2.place(x=5,y=100)
-        button.place(x=10,y=330)
-        c0.deselect()
-        c1.deselect()
-        c2.deselect()
+        self.chat_public = ScrolledText(janela, width=75, height=29, state='disabled')
+        self.chat_public.place(x=10, y=10)
+        self.canvas=Canvas(janela,width=100,height=600)
+        self.canvas.place(x=670,y=10)
+
         janela.mainloop()
 
+servidor_mensagem()
 
-def main():
-    cliente = Cliente()
-main()
